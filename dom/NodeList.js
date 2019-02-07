@@ -1,21 +1,22 @@
-const {live, List} = require('./symbols');
+const {kLive, kOwnerNode} = require('./symbols');
+const TreeHelper = require('./helpers/tree');
 
 class NodeList {
   constructor() {
-    this[List] = [];
-    this[live] = true;
+    this[kLive] = true;
+    this[kOwnerNode] = null;
   }
 
   item(index) {
-    return this[List][index] || null;
+    return TreeHelper.getChildAt(this[kOwnerNode], index);
   }
 
   get length() {
-    return this[List].length;
+    return TreeHelper.getChildrenCount(this[kOwnerNode]);
   }
 
   [Symbol.iterator]() {
-    return this[List].values();
+    return TreeHelper.getChildrenIterator(this[kOwnerNode]);
   }
 }
 
