@@ -1,27 +1,35 @@
 const documentContext = Symbol('documentContext');
 const customElements = Symbol('customElements');
-const ownerDocument = Symbol('ownerDocument');
-const parentNode = Symbol('parentNode');
-const nodeType = Symbol('nodeType');
-const localName = Symbol('localName');
 const elementAttributes = Symbol('attributes');
-const nodeChildNodes = Symbol('childNodes');
 const data = Symbol('data');
 const URL = Symbol('URL');
-const live = Symbol('live');
-const List = Symbol('List');
+const kLive = Symbol('live');
+const kOwnerNode = Symbol('ownerNode');
+
+const kChildNodes = Symbol('childNodes');
+const kOwnerDocument = Symbol('ownerDocument');
+const kNodeType = Symbol('nodeType');
+const kLocalName = Symbol('localName');
+const kParentNode = Symbol('parentNode');
+const kPreviousSibling = Symbol('previousSibling');
+const kNextSibling = Symbol('nextSibling');
+const kFirstChild = Symbol('firstChild');
+const kLastChild = Symbol('lastChild');
+const kIndexCached = Symbol('_cachedIndex');
+const kSizeCached = Symbol('_cachedSize');
+const kLastIndexedNodeCached = Symbol('_cachedLastIndexedNode');
+const kErrorName = Symbol('name');
 
 module.exports = {
   documentContext,
   customElements,
-  ownerDocument,
-  parentNode,
-  nodeType,
-  localName,
-  nodeChildNodes,
   elementAttributes,
   data,
   URL,
-  live,
-  List
+  kLive, kOwnerNode,
+  kOwnerDocument, kNodeType, kLocalName,
+  kParentNode, kPreviousSibling, kNextSibling, kFirstChild, kLastChild,
+  kIndexCached, kSizeCached, kLastIndexedNodeCached,
+  kChildNodes,
+  kErrorName
 };
