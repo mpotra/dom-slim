@@ -1,42 +1,54 @@
-const {ownerDocument, parentNode, nodeType, localName, nodeChildNodes} = require('./symbols');
+const {
+  kOwnerDocument, kNodeType, kLocalName,
+  kParentNode, kPreviousSibling, kNextSibling,
+  kFirstChild, kLastChild,
+  kIndexCached, kSizeCached, kLastIndexedNodeCached,
+  kChildNodes, kOwnerNode
+} = require('./symbols');
+
 const nodeTypes = require('./node-types');
 const {
   ELEMENT_NODE, ATTRIBUTE_NODE, TEXT_NODE, CDATA_SECTION_NODE, PROCESSING_INSTRUCTION_NODE,
   COMMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, DOCUMENT_FRAGMENT_NODE
 } = nodeTypes;
+const {
+  HierarchyRequestError,
+  NotFoundError,
+  NotSupportedError
+} = require('./exceptions');
+const TreeHelper = require('./helpers/tree');
 const NodeList = require('./NodeList');
-const {NodeListInsertAt, NodeListAppend} = require('./NodeList-helpers');
 
 class Node {
   constructor() {
-    this[parentNode] = null;
-    this[ownerDocument] = null;
-    this[nodeChildNodes] = new NodeList();
+    TreeHelper.initialize(this);
+    this[kOwnerDocument] = null;
   }
 
   get ownerDocument() {
-    return this[ownerDocument];
+    return this[kOwnerDocument] || null;
   }
 
   get parentNode() {
-    return this[parentNode];
+    return TreeHelper.getParentOf(this);
   }
 
   get parentElement() {
-    if (this.parentNode && this.parentNode.nodeType === ELEMENT_NODE) {
-      return this.parentNode;
+    const parentNode = TreeHelper.getParentOf(this);
+    if (parentNode && parentNode[kNodeType] === ELEMENT_NODE) {
+      return parentNode;
     }
     return null;
   }
 
   get nodeType() {
-    return this[nodeType];
+    return this[kNodeType];
   }
 
   get nodeName() {
-    switch (this.nodeType) {
+    switch (this[kNodeType]) {
       case ELEMENT_NODE:
-        return this[localName];
+        return this[kLocalName];
       case TEXT_NODE:
         return '#text';
       case CDATA_SECTION_NODE:
@@ -54,49 +66,33 @@ class Node {
     return null;
   }
 
-  set childNodes(arr) {
-    if (Array.isArray(arr)) {
-      this[nodeChildNodes] = arr;
-    }
-  }
-
   get childNodes() {
-    return this[nodeChildNodes];
+    if (!this[kChildNodes]) {
+      this[kChildNodes] = new NodeList();
+      this[kChildNodes][kOwnerNode] = this;
+    }
+
+    return this[kChildNodes];
   }
 
   get firstChild() {
-    if (this.childNodes.length > 0) {
-      return this.childNodes.item(0);
-    }
-
-    return null;
+    return TreeHelper.getFirstChildOf(this);
   }
 
   get lastChild() {
-    const num = this.childNodes.length;
-    if (num > 0) {
-      return this.childNodes.item(num - 1);
-    }
-
-    return null;
+    return TreeHelper.getLastChildOf(this);
   }
 
   get previousSibling() {
-    if (this.parentNode !== null) {
-      
-    }
-    return null;
+    return TreeHelper.getPreviousSiblingOf(this);
   }
 
   get nextSibling() {
-    if (this.parentNode !== null) {
-      
-    }
-    return null;
+    return TreeHelper.getNextSiblingOf(this);
   }
 
   contains(node) {
-    if (node && IsInclusiveDescendant(node, this)) {
+    if (TreeHelper.isInclusiveDescendantOf(node, this)) {
       return true;
     }
 
@@ -104,11 +100,11 @@ class Node {
   }
 
   getRootNode() {
-    return getRootOf(this);
+    return TreeHelper.getRootOf(this);
   }
 
   hasChildNodes() {
-    return (this.childNodes.length > 0);
+    return TreeHelper.hasChildren(this);
   }
 
   appendChild(node) {
@@ -127,144 +123,189 @@ function preInsert(node, parent, child) {
   const refChild = child;
 
   if (refChild === node) {
-    
+    refChild = node.nextSibling;
   }
 
-  adoptNode(node, parent.ownerDocument);
+  Adopt(node, parent[kOwnerDocument]);
 
-  insertNode(node, parent, refChild);
+  Insert(node, parent, refChild);
 
   return node;
 }
 
-function adoptNode(node, document) {
-  const oldDocument = node[ownerDocument];
+function preRemove(child, parent) {
+  if (child.parentNode !== parent) {
+    throw NotFoundError('Child is not in parent children list');
+  }
+
+  Remove(child, parent);
+
+  return child;
+}
+
+function Adopt(node, document) {
+  const oldDocument = node[kOwnerDocument];
 
   if (node.parentNode !== null) {
     removeNode(node, parent);
   }
 
   if (document !== oldDocument) {
-    adoptNodeSteps(node, document);
+    for (let inclusiveDescendant of GetShadowIncludingInclusiveDescendants(node)) {
+      inclusiveDescendant[kOwnerDocument] = document;
+      if (inclusiveDescendant.nodeType === ELEMENT_NODE) {
+        for (const attribute of inclusiveDescendant[kAtrributeList]) {
+          attribute[kOwnerDocument] = document;
+        }
+      }
+      // TODO: STEP 3 -> 2 of https://dom.spec.whatwg.org/#concept-node-adopt
+      // TODO: STEP 3 -> 3 of https://dom.spec.whatwg.org/#concept-node-adopt
+    }
   }
 }
 
-function adoptNodeSteps(node, document) {
-  node[ownerDocument] = document;
-
-  for (let child in node.childNodes) {
-    adoptNodeSteps(child, document);
-  }
-}
-
-function insertNode(node, parent, child) {
-  const isDocumentFragment = (node.type === DOCUMENT_FRAGMENT_NODE);
-  const count = (isDocumentFragment ? node.childodes.length : 1);
+function Insert(node, parent, child) {
+  const nodeType = node.nodeType;
+  const isDocumentFragment = (nodeType === DOCUMENT_FRAGMENT_NODE);
+  const count = (isDocumentFragment ? node.childNodes.length : 1);
 
   if (child !== null) {
-    
+    // Handle live range
   }
 
-  const nodes = (isDocumentFragment ? NodeListCopy(node.childNodes, new NodeList()) : [node]);
+  // Extract children returns an iterator that iterates through and removes each child of Node, returning the child.
+  const nodes = (isDocumentFragment ? TreeHelper.childRemovalIterator(node) : [node]);
 
-  if (isDocumentFragment) {
-    //TODO: Remove nodes from the document fragment.
-  }
+  //const previousSibling = (child !== null ? child.previousSibling : parent.lastChild);
 
-  const previousSibling = (child !== null ? child.previousSibling : parent.lastChild);
-
-  for (let _node in nodes) {
+  for (let _node of nodes) {
     if (child === null) {
-      NodeListAppend(parent.childNodes, _node);
+      TreeHelper.append(_node, parent);
     } else {
-      NodeListInsertAt(parent.childNodes, _node, NodeListIndexOf(child));
+      TreeHelper.insertBefore(_node, parent, child);
     }
 
-    if (node.type === TEXT_NODE) {
+    if (node.nodeType === TEXT_NODE) {
       // child text content change steps for parent
     }
   }
 }
 
-function ensurePreInsertionValidity(node, parent, child) {
-  const parentType = parent[nodeType];
-  const isValidParentType = (
-    parentType === DOCUMENT_NODE || parentType === DOCUMENT_FRAGMENT_NODE || parentType === ELEMENT_NODE
-  );
+function Remove(child, parent, suppressObservers) {
+  
+}
 
-  if (false == isValidParentType) {
-    throw new TypeError('HierarchyRequestError: Parent must be document or element');
+function ensurePreInsertionValidity(node, parent, child) {
+  const parentType = parent.nodeType;
+
+  if (
+    parentType !== DOCUMENT_NODE &&
+    parentType !== DOCUMENT_FRAGMENT_NODE &&
+    parentType !== ELEMENT_NODE
+  ) {
+    throw HierarchyRequestError('Parent must be document or element.');
   }
 
   if (IsHostIncludingInclusiveAncestor(node, parent)) {
-    throw new TypeError('HierarchyRequestError: Node is a host-including inclusive ancestor of parent');
+    throw HierarchyRequestError('Node is not a host-including inclusive ancestor of parent');
   }
 
   if (child !== null && child.parentNode !== parent) {
-    throw new TypeError('NotFoundError: child is not a child of parent');
+    throw NotFoundError('Child is not in the parent');
   }
 
-  const _nodeType = node[nodeType];
+  const nodeType = node.nodeType;
+
   const expectedNodeType = (
-    _nodeType === ELEMENT_NODE || _nodeType === TEXT_NODE || _nodeType === DOCUMENT_FRAGMENT_NODE ||
-    _nodeType === DOCUMENT_TYPE_NODE || _nodeType === PROCESSING_INSTRUCTION_NODE || _nodeType === COMMENT_NODE
+    nodeType === ELEMENT_NODE ||
+    nodeType === TEXT_NODE ||
+    nodeType === DOCUMENT_FRAGMENT_NODE ||
+    nodeType === CDATA_SECTION_NODE ||
+    nodeType === DOCUMENT_TYPE_NODE ||
+    nodeType === PROCESSING_INSTRUCTION_NODE ||
+    nodeType === COMMENT_NODE
   );
 
-  if (false == expectedNodeType) {
-    throw new TypeError('HierarchyRequestError: Node is not of valid type');
+  if (!expectedNodeType) {
+    throw HierarchyRequestError('Node is not of valid type');
   }
 
-  if (node.type === TEXT_NODE && parent.type === DOCUMENT_NODE) {
-    throw new TypeError('HierarchyRequestError: Cannot add a text node into a document parent');
+  if (nodeType === TEXT_NODE && parentType === DOCUMENT_NODE) {
+    throw HierarchyRequestError('Cannot add a text node into a document parent');
   }
 
-  if (node.type === DOCUMENT_TYPE_NODE && parent.type !== DOCUMENT_NODE) {
-      throw new TypeError('HierarchyRequestError: Cannot add a doctype node into a non-document parent');
+  if (nodeType === DOCUMENT_TYPE_NODE && parentType !== DOCUMENT_NODE) {
+      throw HierarchyRequestError('Cannot add a doctype node into a non-document parent');
   }
 
-  if (parent.type === DOCUMENT_NODE) {
-    if (node.type === ELEMENT_NODE) {
-      if (parent.documentElement !== null || child.type === DOCUMENT_TYPE_NODE) {
-        throw new TypeError('HierarchyRequestError: Cannot insert element before a documentElement or doctype');
-      }
-      if (child !== null && child.nextSibling && child.nextSibling.type === DOCUMENT_TYPE_NODE) {
-        throw new TypeError('HierarchyRequestError: Cannot insert element before a doctype sibling');
-      }
-    } else if (node.type === DOCUMENT_FRAGMENT_NODE) {
-      const childNodes = toCollection(node.childNodes);
-      const numElementChildren = childNodes.filter(({type}) => type === ELEMENT_NODE).length;
+  if (parentType === DOCUMENT_NODE) {
 
-      if (numElementChildren > 1 || childNodes.find(({type}) => type === TEXT_NODE)) {
-        throw new TypeError('HierarchyRequestError: Cannot insert document fragment node into document parent');
-      } else if (numElementChildren === 1) {
-        if (parent.documentElement !== null) {
-          throw new TypeError('HierarchyRequestError: Cannot insert document fragment node before documentElement');
+    switch (nodeType) {
+      case ELEMENT_NODE:
+        if (PARENT_HAS_CHILD_OF_TYPE(parent, ELEMENT_NODE)) {
+          throw HierarchyRequestError('Parent is document and already has an element child node');
         }
 
-        if (child.type === DOCUMENT_TYPE_NODE) {
-          throw new TypeError('HierarchyRequestError: Cannot insert document fragment node before a doctype');
+        if (child !== null) {
+          if (child.nodeType === DOCUMENT_TYPE_NODE) {
+            throw HierarchyRequestError('Cannot insert element before a documentElement or doctype');
+          }
+
+          if (child.nextSibling && child.nextSibling.nodeType === DOCUMENT_TYPE_NODE) {
+            throw HierarchyRequestError('Cannot insert element before a doctype sibling');
+          }
+        }
+      case DOCUMENT_FRAGMENT_NODE:
+        const childNodes = toCollection(node.childNodes);
+        const numElementChildren = childNodes.filter(({type}) => type === ELEMENT_NODE).length;
+
+        if (NODE_HAS_MORE_THAN_ONE_OF_TYPE(node, ELEMENT_NODE) || NODE_HAS_CHILD_OF_TYPE(node, TEXT_NODE)) {
+          throw HierarchyRequestError('Cannot insert document fragment node into document parent');
+        } else {
+          if (NODE_HAS_ONE_CHILD_OF_TYPE(node, ELEMENT_NODE)) {
+            if (parent.documentElement !== null) {
+              throw HierarchyRequestError('Cannot insert document fragment node before documentElement');
+            }
+
+            if (child.nodeType === DOCUMENT_TYPE_NODE) {
+              throw HierarchyRequestError('Cannot insert document fragment node before a doctype');
+            }
+
+            if (child !== null && child.nextSibling && child.nextSibling.nodeType === DOCUMENT_TYPE_NODE) {
+              throw HierarchyRequestError('Cannot insert document fragment node before a doctype');
+            }
+          }
+        }
+      case DOCUMENT_TYPE_NODE:
+        if (PARENT_HAS_CHILD_OF_TYPE(parent, DOCUMENT_TYPE_NODE)) {
+          throw HierarchyRequestError('Parent already has a doctype node child');
         }
 
-        if (child !== null && child.nextSibling && child.nextSibling.type === DOCUMENT_TYPE_NODE) {
-          throw new TypeError('HierarchyRequestError: Cannot insert document fragment node before a doctype sibling');
+        if (child !== null) {
+          if (child.previousSibling && child.previousSibling.nodeType === ELEMENT_NODE) {
+            throw HierarchyRequestError('Cannot insert a doctype after an element node');
+          }
+        } else {
+          if (PARENT_HAS_CHILD_OF_TYPE(parent, ELEMENT_NODE)) {
+            throw HierarchyRequestError('Cannot insert a doctype into document with element nodes');
+          }
         }
-      }
-    } else if (node.type === DOCUMENT_TYPE_NODE) {
-      const childNodes = toCollection(parent.childNodes);
-      if (childNodes.find(({type}) => type === DOCUMENT_TYPE_NODE)) {
-        throw new TypeError('HierarchyRequestError: Parent already has a doctype node child');
-      }
-
-      if (child !== null) {
-        if (child.previousSibling && child.previousSibling.type === ELEMENT_NODE) {
-          throw new TypeError('HierarchyRequestError: Cannot insert a doctype after an element node');
-        }
-      } else if (childNodes.find(({type}) => type === ELEMENT_NODE)) {
-        throw new TypeError('HierarchyRequestError: Cannot insert a doctype into document with element nodes');
-      }
-
     }
   }
+}
+
+function adoptNode(node, context) {
+  if (node.nodeType === DOCUMENT_NODE) {
+    throw NotSupportedError('Cannot adopt a document node');
+  }
+
+  if (IsShadowRoot(node)) {
+    throw HierarchyRequestError('Cannot adopt a shadow root node');
+  }
+
+  Adopt(node, context);
+
+  return node;
 }
 
 function IsHostIncludingInclusiveAncestor(parent, node) {
@@ -314,8 +355,8 @@ function IsInclusiveDescendant(node, parent) {
 }
 
 function getRootOf(node) {
-  while (node && node.parentNode !== null) {
-    node = node.parentNode;
+  while (node && node[kParentNode] !== null) {
+    node = node[kParentNode];
   }
 
   return node;
