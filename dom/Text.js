@@ -1,12 +1,11 @@
-const Node = require('./Node');
 const CharacterData = require('./CharacterData');
 const {TEXT_NODE} = require('./node-types');
-const {nodeType} = require('./symbols');
+const {SET_NODE_TYPE} = require('./helpers/node');
 
 class Text extends CharacterData {
   constructor(data) {
     super();
-    this[nodeType] = TEXT_NODE;
+    SET_NODE_TYPE(TEXT_NODE);
     this.data = data;
   }
 

@@ -1,62 +1,32 @@
 const Node = require('./Node');
 const {ELEMENT_NODE} = require('./node-types');
-const {elementAttributes, nodeType} = require('./symbols');
+const {SET_NODE_TYPE} = require('./helpers/node');
+const {getNamespace, getNamespacePrefix, getLocalName, getElementHTMLQualifiedName} = require('./helpers/namespace');
 
 class Element extends Node {
   constructor() {
     super();
-    this[nodeType] = ELEMENT_NODE;
-    this[elementAttributes] = new Map();
+    SET_NODE_TYPE(ELEMENT_NODE);
   }
 
-  get id() {
-    return (this.hasAttribute('id') ? this.getAttribute('id') : '');
+  get namespaceURI() {
+    return getNamespace(this);
   }
 
-  set id(value) {
-    this.setAttribute('id', value);
+  get prefix() {
+    return getNamespacePrefix(this);
   }
 
-  get attributes() {
-    return this[elementAttributes];
+  get localName() {
+    return getLocalName(this);
   }
 
   get tagName() {
-    return this.nodeName;
-  }
-
-  getAttribute(attr) {
-    return this.attributes.get(attr);
-  }
-
-  getAttributeNames() {
-    return Array.from(this.attributes.keys());
+    return getElementHTMLQualifiedName(this);
   }
 
   getElementsByTagName(tag) {
     return this.childNodes.filter((node) => node.nodeValue === tag);
-  }
-
-  hasAttributes() {
-    return (this.attributes.size > 0);
-  }
-
-  hasAttribute(attr) {
-    return this.attributes.has(attr);
-  }
-
-  removeAttribute(attr) {
-    return this.attributes.delete(attr);
-  }
-
-  setAttribute(attr, value) {
-    if (!value) {
-      value = '';
-    } else if (typeof value !== 'string') {
-      value = String(value);
-    }
-
-    return this.attributes.set(attr, value);
   }
 }
 

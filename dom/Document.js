@@ -1,11 +1,12 @@
-const Node = require('./Node');
-const {nodeType} = require('./symbols');
+const {HierarchyRequestError, NotSupportedError} = require('../exceptions');
+const {Node, DOCUMENT_NODE} = require('./Node');
+const {SET_NODE_TYPE, NODE_TYPE, Adopt} = require('./helpers/node');
 const createElement = require('./helpers/createElement');
 
 class Document extends Node {
   constructor() {
     super();
-    this[nodeType] = Node.DOCUMENT_NODE;
+    SET_NODE_TYPE(DOCUMENT_NODE);
   }
 
   get nodeName() {
@@ -16,20 +17,18 @@ class Document extends Node {
     return null;
   }
 
-  get textContent() {
-    return this._source;
-  }
+  adoptNode(node) {
+    if (NODE_TYPE(node) === DOCUMENT_NODE) {
+      throw NotSupportedError('Cannot adopt a document node');
+    }
 
-  get innerText() {
-    return this._modifiedSource;
-  }
+    if (isShadowRoot(node)) {
+      throw HierarchyRequestError('Cannot adopt a shadow root node');
+    }
 
-  get characterSet() {
-    return 'utf8';
-  }
+    Adopt(node, this);
 
-  get URL() {
-    return this._URL;
+    return node;
   }
 
   createElement(localName, {is} = {}) {
@@ -41,6 +40,11 @@ class Document extends Node {
 
     return createElement(this, localName, namespace, {prefix: null, is, syncCustomElements: false});
   }
+}
+
+function isShadowRoot(node) {
+  // Not implemented.
+  return false;
 }
 
 module.exports = Document;
