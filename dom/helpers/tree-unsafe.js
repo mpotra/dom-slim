@@ -1,8 +1,7 @@
 const {
-  kOwnerDocument, kNodeType, kLocalName,
   kParentNode, kPreviousSibling, kNextSibling,
   kFirstChild, kLastChild,
-  kCacheIndex, kSizeCached, kCacheLastIndexedNode
+  kSizeCached
 } = require('../symbols');
 
 function getFirstChildOf(node) {
@@ -156,11 +155,7 @@ function remove(child, parent) {
 }
 
 function isChildOf(child, parent) {
-  if (child && typeof child == 'object') {
-    return (child[kParentNode] === parent);
-  }
-
-  return false;
+  return (child[kParentNode] === parent);
 }
 
 function getRootOf(child) {
@@ -181,13 +176,13 @@ function isDescendantOf(node, parent) {
     return false;
   }
 
-  for (child of getChildrenIterator(parent)) {
+  for (const child of getChildrenIterator(parent)) {
     if (node === child) {
       return true;
     }
   }
 
-  for (child of getChildrenIterator(parent)) {
+  for (const child of getChildrenIterator(parent)) {
     if (isDescendantOf(node, child)) {
       return true;
     }
@@ -319,6 +314,7 @@ function hasInternalProperty(node, property) {
 }
 
 module.exports = {
+  isEmpty,
   isObject,
   isNode,
   getFirstChildOf,
@@ -341,6 +337,7 @@ module.exports = {
   isHostIncludingInclusiveAncestorOf,
   getChildrenIterator,
   childRemovalIterator,
+  getChildAt,
   parentInitialize,
   childrenInitialize,
   siblingsInitialize,

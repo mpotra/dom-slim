@@ -1,9 +1,6 @@
 const assert = require('assert').strict;
 const {
-  kOwnerDocument, kNodeType, kLocalName,
-  kParentNode, kPreviousSibling, kNextSibling,
-  kFirstChild, kLastChild,
-  kCacheIndex, kSizeCached, kCacheLastIndexedNode
+  kParentNode, kPreviousSibling, kNextSibling
 } = require('../symbols');
 const unsafe = require('./tree-unsafe');
 const {isObject, isNode} = unsafe;
@@ -47,39 +44,12 @@ function insertBefore(child, parent, beforeChild = null) {
   assert(isNode(parent));
   assert(isNode(child));
 
-  if (!unsafe.hasChildren(parent) || beforeChild === null) {
-    return unsafe.append(child, parent);
+  if (beforeChild !== null) {
+    assert(isNode(beforeChild));
+    assert(unsafe.isChildOf(beforeChild, parent));
   }
 
-  assert(isNode(beforeChild));
-  assert(beforeChild[kParentNode] === parent);
-
-  if (child === beforeChild) {
-    return child;
-  }
-
-  if (unsafe.isChildOf(child, parent)) {
-    child = unsafe.remove(child, parent);
-  }
-
-  if (parent[kFirstChild] === beforeChild) {
-    return unsafe.prepend(child, parent);
-  }
-  
-  assert(child[kParentNode] === null);
-  assert(child[kPreviousSibling] === null);
-  assert(child[kNextSibling] === null);
-
-  const prevSibling = beforeChild[kPreviousSibling];
-  prevSibling[kNextSibling] = child;
-  child[kPreviousSibling] = prevSibling;
-  child[kNextSibling] = beforeChild;
-
-  parent[kSizeCached]++;
-
-  child[kParentNode] = parent;
-
-  return child;
+  return unsafe.insertBefore(child, parent, beforeChild);
 }
 
 function remove(child, parent) {
@@ -116,14 +86,14 @@ function isDescendantOf(node, parent) {
   }
 
   assert(isNode(parent));
-  assert(isNode(child));
+  assert(isNode(node));
 
   return unsafe.isDescendantOf(node, parent);
 }
 
 function isInclusiveDescendantOf(node, parent) {
   if (isNode(node) && isNode(parent)) {
-    return unsafe.isInclusiveDescendantOf(node, parent));
+    return unsafe.isInclusiveDescendantOf(node, parent);
   }
   return false;
 }
@@ -221,6 +191,7 @@ function initialize(node) {
 }
 
 module.exports = {
+  isEmpty,
   getFirstChildOf,
   getLastChildOf,
   getNextSiblingOf,
@@ -239,6 +210,7 @@ module.exports = {
   isAncestorOf,
   isInclusiveAncestorOf,
   isHostIncludingInclusiveAncestorOf,
+  getChildAt,
   getChildrenIterator,
   childRemovalIterator,
   parentInitialize,
