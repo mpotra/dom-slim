@@ -19,9 +19,11 @@ const kIndexCached = Symbol('_cachedIndex');
 const kSizeCached = Symbol('_cachedSize');
 const kLastIndexedNodeCached = Symbol('_cachedLastIndexedNode');
 const kErrorName = Symbol('name');
-const kAttributeList = Symbol('kAttributeList');
-const kNamespace = Symbol('kNamespace');
-const kNamespacePrefix = Symbol('kNamespacePrefix');
+const kAttributeList = Symbol('attributeList');
+const kNamespace = Symbol('namespace');
+const kNamespacePrefix = Symbol('namespacePrefix');
+const kOwnerElement = Symbol('ownerElement');
+const kAttributeValue = Symbol('attributeValue');
 
 module.exports = {
   documentContext,
@@ -36,5 +38,6 @@ module.exports = {
   kChildNodes,
   kErrorName,
   kAttributeList,
-  kNamespace, kNamespacePrefix
+  kNamespace, kNamespacePrefix,
+  kOwnerElement, kAttributeValue
 };

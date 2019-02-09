@@ -25,12 +25,24 @@ function getNamespace(obj) {
   return obj[kNamespace] || '';
 }
 
+function setNamespace(obj, value = null) {
+  return (obj[kNamespace] = value);
+}
+
 function getNamespacePrefix(obj) {
   return obj[kNamespacePrefix] || '';
 }
 
+function setNamespacePrefix(obj, value = null) {
+  return (obj[kNamespacePrefix] = value);
+}
+
 function getLocalName(obj) {
   return obj[kLocalName] || '';
+}
+
+function setLocalName(obj, value = null) {
+  return (obj[kLocalName] = value);
 }
 
 function getQualifiedName(obj) {
@@ -54,5 +66,8 @@ module.exports = {
   getLocalName,
   getQualifiedName,
   getElementHTMLQualifiedName,
-  getAttrQualifiedName
+  getAttrQualifiedName,
+  setNamespace,
+  setNamespacePrefix,
+  setLocalName
 };
