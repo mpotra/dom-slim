@@ -84,6 +84,7 @@ class Node {
     switch (NODE_TYPE(this)) {
       case ATTRIBUTE_NODE:
         //setExistingAttributeValueOf(this, value);
+        this.value = value;
         break;
       case TEXT_NODE:
       case PROCESSING_INSTRUCTION_NODE:
