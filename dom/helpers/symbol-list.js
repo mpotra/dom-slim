@@ -17,7 +17,7 @@ function getNewSymbol(options) {
   if (options) {
     switch (typeof options) {
       case 'string':
-        symbol = Symbol(string);
+        symbol = Symbol(options);
         break;
       case 'symbol':
         symbol = options;
@@ -27,10 +27,10 @@ function getNewSymbol(options) {
         const _symbol = options.symbol;
         if (_symbol) {
           if (typeof _symbol === 'symbol') {
-            symbol = symbol;
+            symbol = _symbol;
           } else {
             if (typeof _symbol === 'string') {
-              symbol = Symbol(options.symbol);
+              symbol = Symbol(_symbol);
             }
           }
         }
@@ -96,7 +96,7 @@ class SymbolList {
 
     if (node) {
       if (node.prev || node.next) {
-        return obj;
+        return null;
       }
     } else {
       node = this.nodeOf(obj);
@@ -121,7 +121,7 @@ class SymbolList {
     const node = this.getNodeOf(obj);
 
     if (!node) {
-      return obj;
+      return null;
     }
 
     if (obj === this.first) {
@@ -155,6 +155,69 @@ class SymbolList {
     this._length--;
 
     return obj;
+  }
+
+  replace(oldObj, newObj) {
+    if (oldObj === newObj) {
+      return null;
+    }
+
+    const oldNode = this.getNodeOf(oldObj);
+
+    if (!oldNode) {
+      return null;
+    }
+
+    if (this.getNodeOf(newObj) != null) {
+      this.remove(newObj);
+    }
+
+    const newNode = this.nodeOf(newObj);
+
+    if (oldObj === this.first) {
+      if (this.first === this.last) {
+        this.first = this.last = newObj;
+      } else {
+        const next = this.next(oldObj);
+
+        if (next) {
+          newNode.next = next;
+          this.nodeOf(next).prev = newObj;
+        }
+
+        this.first = newObj;
+      }
+    } else {
+      if (oldObj === this.last) {
+        const prev = this.prev(this.last);
+
+        if (prev) {
+          newNode.prev = prev;
+          this.nodeOf(prev).next = newObj;
+        }
+
+        this.last = newObj;
+      } else {
+        const prev = this.prev(oldObj);
+        const next = this.next(oldObj);
+
+        newNode.prev = prev;
+        newNode.next = next;
+
+        if (prev) {
+          this.nodeOf(prev).next = newObj;
+        } else {
+          this.nodeOf(next).prev = newObj;
+        }
+      }
+    }
+
+    delete oldObj[this.symbol];
+
+    oldNode.next = null;
+    oldNode.prev = null;
+
+    return newObj;
   }
 
   contains(obj) {
