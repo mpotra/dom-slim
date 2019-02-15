@@ -1,20 +1,23 @@
 const Node = require('./Node');
 const {ATTRIBUTE_NODE} = require('./node-types');
 const {SET_NODE_TYPE} = require('./helpers/node');
-const {kOwnerElement, kAttributeValue} = require('./symbols');
 const {
   getNamespace, getNamespacePrefix, getLocalName, getAttrQualifiedName,
   setNamespace, setNamespacePrefix
 } = require('./helpers/namespace');
+const {getElement, setElement, getValue, setValue} = require('./helpers/attr');
 
 class Attr extends Node {
   constructor() {
     super();
     SET_NODE_TYPE(ATTRIBUTE_NODE);
+
     setNamespace(this, null);
     setNamespacePrefix(this, null);
-    this[kOwnerElement] = null;
-    this[kAttributeValue] = '';
+
+    // Calls setValue() before setting an element, in order to avoid triggering Change()
+    setValue(this, '');
+    setElement(this, null);
   }
 
   get namespaceURI() {
@@ -34,7 +37,7 @@ class Attr extends Node {
   }
 
   get ownerElement() {
-    return this[kOwnerElement];
+    return getElement(this);
   }
 
   get specified() {
@@ -42,21 +45,15 @@ class Attr extends Node {
   }
 
   get value() {
-    return this[kAttributeValue];
+    return getValue(this);
   }
 
   set value(str = '') {
     if (typeof str !== 'string') {
-      str = (!str ? '' : String(str));
+      str = String(str);
     }
 
-    const element = this[kOwnerElement];
-
-    if (!element) {
-      this[kAttributeValue] = str;
-    } else {
-      Change(this, element, str);
-    }
+    setValue(this, str);
   }
 }
 
