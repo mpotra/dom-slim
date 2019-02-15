@@ -1,4 +1,5 @@
-const Attr = require('./Attr');
+const Attr = require('../Attr');
+
 const {getNodeDocument, setNodeDocument} = require('./node');
 const {
   getAttributeByName: AttrGetAttributeByName,

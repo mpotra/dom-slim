@@ -1,8 +1,10 @@
-const {documentContext, ownerDocument, localName} = require('./symbols');
-const Element = require('./Element');
+const Element = require('../Element');
+const {setNodeDocument} = require('./node');
+const {setLocalName} = require('./namespace');
+const {getDocumentContext} = require('./document');
 
-function createElement(document, _localName, namespace, {prefix = null, is = null, syncCustomElements} = {}) {
-  const context = document[documentContext];
+function createElement(document, localName, namespace, {prefix = null, is = null, syncCustomElements} = {}) {
+  const context = getDocumentContext(document);
 
   if (!context) {
     throw new TypeError('Document does not have an associated context');
@@ -16,13 +18,13 @@ function createElement(document, _localName, namespace, {prefix = null, is = nul
 
   if (Constructor) {
     result = new Constructor();
-    result[localName] = lcLocalName;
+    setLocalName(result, lcLocalName);
   } else {
     result = new Element();
-    result[localName] = _localName;
+    setLocalName(result, localName);
   }
 
-  result[ownerDocument] = document;
+  setNodeDocument(result, document);
 
   return result;
 }

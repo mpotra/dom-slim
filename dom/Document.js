@@ -1,4 +1,4 @@
-const {HierarchyRequestError, NotSupportedError} = require('../exceptions');
+const {HierarchyRequestError, NotSupportedError} = require('./exceptions');
 const {Node, DOCUMENT_NODE} = require('./Node');
 const {SET_NODE_TYPE, NODE_TYPE, Adopt} = require('./helpers/node');
 const createElement = require('./helpers/createElement');
