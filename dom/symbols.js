@@ -25,6 +25,7 @@ const kNamespacePrefix = Symbol('namespacePrefix');
 const kAttrElement = Symbol('attributeElement');
 const kAttributeValue = Symbol('attributeValue');
 const kElementAttributes = Symbol('attributes');
+const kAssociatedElement = Symbol('namedNodeMapElement');
 
 module.exports = {
   kDocumentContext,
@@ -40,5 +41,6 @@ module.exports = {
   kErrorName,
   kAttributeList, kElementAttributes,
   kNamespace, kNamespacePrefix,
-  kAttrElement, kAttributeValue
+  kAttrElement, kAttributeValue,
+  kAssociatedElement
 };
