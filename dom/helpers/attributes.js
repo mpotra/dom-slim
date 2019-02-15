@@ -167,13 +167,13 @@ function Replace(oldAttr, newAttr, element) {
 }
 
 function SetValue(attr, value = null) {
-  attr[kAttributeValue] = value;
+  attr[kAttributeValue] = String(value);
   return attr;
 }
 
 function GetValue(attr) {
   const value = attr[kAttributeValue];
-  return (value ? value : null);
+  return String(value);
 }
 
 module.exports = {

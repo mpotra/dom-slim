@@ -6,7 +6,7 @@ const {
   getAttributeNS: AttrGetAttributeNS,
   hasAttribute: AttrHasAttribute,
   hasAttributeNS: AttrHasAttributeNS,
-  removeAttribute: AttrRemoveAttribute,
+  removeAttributeByName: AttrRemoveAttribute,
   removeAttributeNS: AttrRemoveAttributeNS,
   Append: AttrAppend,
   Change: AttrChange,
@@ -88,7 +88,7 @@ function setAttribute(element, qualifiedName, value) {
 function setAttributeNS(element, givenNamespace, qualifiedName, value) {
   const {namespace, prefix, localName} = ValidateAndExtract(givenNamespace, qualifiedName);
 
-  setAttributeValue(this, localName, value, {prefix, namespace});
+  setAttributeValue(element, localName, value, {prefix, namespace});
 }
 
 function setAttributeValue(element, localName, value, {prefix, namespace} = {}) {

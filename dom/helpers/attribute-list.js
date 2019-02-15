@@ -1,4 +1,5 @@
 const SymbolList = require('./symbol-list');
+const {getNamespace, getLocalName} = require('./namespace');
 
 /**
  * The AttributeList interface allows adding Attr nodes to a linked-list,
@@ -73,7 +74,7 @@ class AttributeList {
     const list = this.map.get(localName);
     if (list) {
       for (const item of list) {
-        if (item.namespace == namespace) {
+        if (getNamespace(item) == namespace) {
           return item;
         }
       }
@@ -83,7 +84,7 @@ class AttributeList {
   }
 
   append(attr) {
-    const name = attr.localName;
+    const name = getLocalName(attr);
 
     this.list.append(attr);
 
@@ -98,7 +99,7 @@ class AttributeList {
 
   remove(attr) {
     if (this.list.remove(attr)) {
-      const localName = attr.localName;
+      const localName = getLocalName(attr);
       const namedList = this.map.get(localName);
       if (namedList) {
         namedList.remove(attr);

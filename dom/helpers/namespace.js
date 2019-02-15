@@ -33,7 +33,7 @@ function getElementHTMLQualifiedName(element) {
 }
 
 function getNamespace(obj) {
-  return obj[kNamespace] || '';
+  return obj[kNamespace] || null;
 }
 
 function setNamespace(obj, value = null) {
@@ -41,7 +41,7 @@ function setNamespace(obj, value = null) {
 }
 
 function getNamespacePrefix(obj) {
-  return obj[kNamespacePrefix] || '';
+  return obj[kNamespacePrefix] || null;
 }
 
 function setNamespacePrefix(obj, value = null) {
