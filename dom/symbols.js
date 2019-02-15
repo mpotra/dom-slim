@@ -22,8 +22,9 @@ const kErrorName = Symbol('name');
 const kAttributeList = Symbol('attributeList');
 const kNamespace = Symbol('namespace');
 const kNamespacePrefix = Symbol('namespacePrefix');
-const kOwnerElement = Symbol('ownerElement');
+const kAttrElement = Symbol('attributeElement');
 const kAttributeValue = Symbol('attributeValue');
+const kElementAttributes = Symbol('attributes');
 
 module.exports = {
   documentContext,
@@ -37,7 +38,7 @@ module.exports = {
   kIndexCached, kSizeCached, kLastIndexedNodeCached,
   kChildNodes,
   kErrorName,
-  kAttributeList,
+  kAttributeList, kElementAttributes,
   kNamespace, kNamespacePrefix,
-  kOwnerElement, kAttributeValue
+  kAttrElement, kAttributeValue
 };
