@@ -22,6 +22,19 @@ function SET_NODE_TYPE(node, type) {
   return (node[kNodeType] = type);
 }
 
+function getNodeDocument(node) {
+  const doc = node[kOwnerDocument];
+  return (doc ? doc : null);
+}
+
+function setNodeDocument(node, document) {
+  if (!document) {
+    document = null;
+  }
+
+  return (node[kOwnerDocument] = document);
+}
+
 function preInsert(node, parent, child) {
   ensurePreInsertionValidity(node, parent, child);
 
@@ -315,6 +328,8 @@ function ensurePreInsertionValidity(node, parent, child) {
 module.exports = {
   NODE_TYPE,
   SET_NODE_TYPE,
+  getNodeDocument,
+  setNodeDocument,
   preInsert,
   preRemove,
   Adopt,
