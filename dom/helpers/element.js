@@ -14,7 +14,7 @@ const {
 } = require('./attributes');
 const {
   setLocalName, setNamespace, setNamespacePrefix,
-  isHTMLElement, isName: isValidAttributeName, ValidateAndExtract
+  isHTMLElement, isValidName, ValidateAndExtract
 } = require('./namespace');
 const {InvalidCharacterError} = require('../exceptions');
 
@@ -64,7 +64,7 @@ function removeAttributeNS(element, namespace, localName) {
 }
 
 function setAttribute(element, qualifiedName, value) {
-  if (!isValidAttributeName(qualifiedName)) {
+  if (!isValidName(qualifiedName)) {
     throw InvalidCharacterError('Invalid attribute name');
   }
 
@@ -114,7 +114,7 @@ function setAttributeValue(element, localName, value, {prefix, namespace} = {}) 
 }
 
 function toggleAttribute(element, qualifiedName, force) {
-  if (!isValidAttributeName(qualifiedName)) {
+  if (!isValidName(qualifiedName)) {
     throw InvalidCharacterError('Invalid attribute name');
   }
 
