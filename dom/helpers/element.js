@@ -144,10 +144,22 @@ function toggleAttribute(element, qualifiedName, force) {
   return true;
 }
 
+function getAttributeValue(element, qualifiedName) {
+  const attr = getAttribute(element, qualifiedName);
+  return (attr ? attr.value : null);
+}
+
+function getAttributeValueNS(element, namespace, localName) {
+  const attr = getAttributeNS(element, namespace, localName);
+  return (attr ? attr.value : null);
+}
+
 module.exports = {
   createAttribute,
   getAttribute,
   getAttributeNS,
+  getAttributeValue,
+  getAttributeValueNS,
   hasAttribute,
   hasAttributeNS,
   removeAttribute,

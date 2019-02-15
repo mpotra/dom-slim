@@ -9,6 +9,8 @@ const {
 const {
   getAttribute,
   getAttributeNS,
+  getAttributeValue,
+  getAttributeValueNS,
   hasAttribute,
   hasAttributeNS,
   removeAttribute,
@@ -50,6 +52,28 @@ class Element extends Node {
     return getElementHTMLQualifiedName(this);
   }
 
+  /**
+   * Reflect id attribute
+   */
+  get id() {
+    return getAttributeValue(this, 'id');
+  }
+
+  set id(value) {
+    setAttribute(this, 'id', value);
+  }
+
+  /**
+   * Reflect className attribute
+   */
+  get className() {
+    return getAttributeValue(this, 'class');
+  }
+
+  set className(value) {
+    setAttribute(this, 'class', value);
+  }
+
   getElementsByTagName(tag) {
     return this.childNodes.filter((node) => node.nodeValue === tag);
   }
@@ -75,13 +99,11 @@ class Element extends Node {
   }
 
   getAttribute(qualifiedName) {
-    const attr = getAttribute(this, qualifiedName);
-    return (attr ? attr.value : null);
+    return getAttributeValue(this, qualifiedName);
   }
 
   getAttributeNS(namespace, localName) {
-    const attr = getAttributeNS(this, namespace, localName);
-    return (attr ? attr.value : null);
+    return getAttributeValueNS(this, namespace, localName);
   }
 
   setAttribute(qualifiedName, value) {
