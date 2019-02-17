@@ -1,7 +1,7 @@
 const kDocumentContext = Symbol('documentContext');
 const customElements = Symbol('customElements');
 const elementAttributes = Symbol('attributes');
-const data = Symbol('data');
+const kData = Symbol('data');
 const kDocumentURL = Symbol('documentURL');
 const kLive = Symbol('live');
 const kOwnerNode = Symbol('ownerNode');
@@ -31,7 +31,7 @@ module.exports = {
   kDocumentContext,
   customElements,
   elementAttributes,
-  data,
+  kData,
   kDocumentURL,
   kLive, kOwnerNode,
   kOwnerDocument, kNodeType, kLocalName,

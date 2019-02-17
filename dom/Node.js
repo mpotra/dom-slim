@@ -9,7 +9,7 @@ const {
   COMMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, DOCUMENT_FRAGMENT_NODE
 } = nodeTypes;
 const TreeHelper = require('./helpers/tree');
-const {NODE_TYPE, preInsert, preRemove, Replace} = require('./helpers/node');
+const {NODE_TYPE, preInsert, preRemove, Replace, getTextContent, normalize} = require('./helpers/node');
 const NodeList = require('./NodeList');
 
 class Node {
@@ -68,6 +68,7 @@ class Node {
       case ATTRIBUTE_NODE:
         return this.value;
       case TEXT_NODE:
+      case CDATA_SECTION_NODE:
       case PROCESSING_INSTRUCTION_NODE:
       case COMMENT_NODE:
         return this.data;
@@ -87,11 +88,19 @@ class Node {
         this.value = value;
         break;
       case TEXT_NODE:
+      case CDATA_SECTION_NODE:
       case PROCESSING_INSTRUCTION_NODE:
       case COMMENT_NODE:
-        //replaceDataOf(this, 0, this.length, value);
+        this.replaceData(0, this.length, value);
         break;
     }
+  }
+
+  get textContent() {
+    return getTextContent(this);
+  }
+
+  set textContent(value) {
   }
 
   get childNodes() {
@@ -133,6 +142,10 @@ class Node {
 
   isSameNode(otherNode) {
     return (this === otherNode);
+  }
+
+  normalize() {
+    normalize(this);
   }
 
   hasChildNodes() {

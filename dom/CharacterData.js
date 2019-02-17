@@ -1,5 +1,12 @@
 const Node = require('./Node');
-const {data} = require('./symbols');
+const {
+  getStringData,
+  setStringData,
+  getDataLength,
+  substringData,
+  appendData,
+  replaceData
+} = require('./helpers/character-data');
 
 class CharacterData extends Node {
   constructor() {
@@ -7,30 +14,40 @@ class CharacterData extends Node {
   }
 
   get data() {
-    return (this[data] || '');
+    return getStringData(this);
   }
 
   set data(str) {
-    this[data] = (typeof str === 'string' ? str : String(str));
+    setStringData(this, str);
   }
 
   get length() {
-    return this.data.length;
+    return getDataLength(this);
   }
 
   substringData(offset, count) {
+    return substringData(this, offset, count);
   }
 
-  appendData(_data) {
+  appendData(data) {
+    //replaceData(this, this.data.length, 0, data);
+    appendData(this, String(data));
+    return this.data;
   }
 
-  insertData(offset, _data) {
+  insertData(offset, data) {
+    replaceData(this, Number(offset), 0, String(data));
+    return this.data;
   }
 
   deleteData(offset, count) {
+    replaceData(this, Number(offset), count, '');
+    return this.data;
   }
 
-  replaceData(offset, count, _data) {
+  replaceData(offset, count, data) {
+    replaceData(this, Number(offset), Number(count), String(data));
+    return this.data;
   }
 }
 

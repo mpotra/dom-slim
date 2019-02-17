@@ -1,8 +1,8 @@
 const {
-  ELEMENT_NODE, TEXT_NODE, CDATA_SECTION_NODE, PROCESSING_INSTRUCTION_NODE,
+  ELEMENT_NODE, ATTRIBUTE_NODE, TEXT_NODE, CDATA_SECTION_NODE, PROCESSING_INSTRUCTION_NODE,
   COMMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, DOCUMENT_FRAGMENT_NODE
 } = require('../node-types');
-
+const {getStringData, replaceData} = require('./character-data');
 const {kOwnerDocument, kNodeType} = require('../symbols');
 
 const {
@@ -325,6 +325,132 @@ function ensurePreInsertionValidity(node, parent, child) {
   }
 }
 
+function getLength(node) {
+  switch (NODE_TYPE(node)) {
+    case DOCUMENT_TYPE_NODE:
+      return 0;
+    case TEXT_NODE:
+    case CDATA_SECTION_NODE:
+    case PROCESSING_INSTRUCTION_NODE:
+    case COMMENT_NODE:
+      return node.length;
+    default:
+      return TreeHelper.getChildrenCount(node);
+  }
+}
+
+function isTextNode(node, exclusive = false) {
+  const type = NODE_TYPE(node);
+
+  if (type == TEXT_NODE) {
+    return true;
+  }
+
+  if (!exclusive && type == CDATA_SECTION_NODE) {
+    return true;
+  }
+
+  return false;
+}
+
+function isExclusiveTextNode(node) {
+  return isTextNode(node, true);
+}
+
+function getTextContent(node, exclusive = false) {
+  switch (NODE_TYPE(node)) {
+    case DOCUMENT_FRAGMENT_NODE:
+    case ELEMENT_NODE:
+      let text = '';
+      for (const child of getTextNodeDescendantsIterator(node, exclusive)) {
+        const childText = child.data;
+        text = `${text}${childText}`;
+      }
+      return text;
+    case ATTRIBUTE_NODE:
+      return node.value;
+    case TEXT_NODE:
+    case CDATA_SECTION_NODE:
+    case PROCESSING_INSTRUCTION_NODE:
+    case COMMENT_NODE:
+      return node.data;
+  }
+
+  return null;
+}
+
+function* getTextNodeDescendantsIterator(node, exclusive = false) {
+  const iterator = TreeHelper.getChildrenIterator(node);
+  let current = iterator.next();
+  while (!current.done) {
+    const currentNode = current.value;
+    switch (NODE_TYPE(currentNode)) {
+      case DOCUMENT_FRAGMENT_NODE:
+      case ELEMENT_NODE:
+        yield* getTextNodeDescendantsIterator(currentNode, exclusive);
+        break;
+      case TEXT_NODE:
+        yield currentNode;
+        break;
+      case CDATA_SECTION_NODE:
+        if (!exclusive) {
+          yield currentNode;
+        }
+        break;
+    }
+
+    current = iterator.next();
+  }
+}
+
+function* getContiguousTextNodes(node, exclusive = false) {
+  if (!node) {
+    return;
+  }
+
+  let prevSibling = TreeHelper.getPreviousSiblingOf(node);
+  while (prevSibling && isTextNode(prevSibling, exclusive)) {
+    yield prevSibling;
+    prevSibling = TreeHelper.getPreviousSiblingOf(prevSibling);
+  }
+
+  yield node;
+
+  let nextSibling = TreeHelper.getNextSiblingOf(node);
+  while (nextSibling && isTextNode(nextSibling, exclusive)) {
+    yield nextSibling;
+    nextSibling = TreeHelper.getNextSiblingOf(nextSibling);
+  }
+}
+
+/**
+ * https://dom.spec.whatwg.org/#dom-node-normalize
+ *
+ */
+function normalize(node) {
+  const descendants = getTextNodeDescendantsIterator(node, true);
+
+  for (const descendant of descendants) {
+    const length = getLength(descendant);
+    const parent = TreeHelper.getParentOf(descendant);
+
+    if (length == 0) {
+      Remove(descendant, parent);
+      continue;
+    }
+
+    // Get an array of contiguous exclusive Text nodes of descendant, excluding descendant.
+    const contiguousTextSiblings = Array.from(getContiguousTextNodes(descendant, true)).filter((n) => n !== descendant);
+    // Concatenate data of all contiguous exclusive Text nodes.
+    const data = contiguousTextSiblings.reduce((v, sibling) => v + getStringData(sibling), '');
+
+    replaceData(descendant, length, 0, data);
+ 
+    contiguousTextSiblings.forEach((sibling) => Remove(sibling, parent));
+  }
+}
+
+
 module.exports = {
   NODE_TYPE,
   SET_NODE_TYPE,
@@ -335,5 +461,12 @@ module.exports = {
   Adopt,
   Insert,
   Remove,
-  Replace
+  Replace,
+  getLength,
+  isTextNode,
+  isExclusiveTextNode,
+  getTextContent,
+  getTextNodeDescendantsIterator,
+  getContiguousTextNodes,
+  normalize
 };

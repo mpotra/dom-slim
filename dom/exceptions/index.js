@@ -4,6 +4,7 @@ const NotSupportedError = require('./NotSupportedError');
 const InUseAttributeError = require('./InUseAttributeError');
 const InvalidCharacterError = require('./InvalidCharacterError');
 const NamespaceError = require('./NamespaceError');
+const IndexSizeError = require('./IndexSizeError');
 
 module.exports = {
   HierarchyRequestError,
@@ -11,5 +12,6 @@ module.exports = {
   NotSupportedError,
   InUseAttributeError,
   InvalidCharacterError,
-  NamespaceError
+  NamespaceError,
+  IndexSizeError
 };

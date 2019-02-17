@@ -1,12 +1,13 @@
 const {HierarchyRequestError, NotSupportedError} = require('./exceptions');
 const {Node, DOCUMENT_NODE} = require('./Node');
-const {SET_NODE_TYPE, NODE_TYPE, Adopt} = require('./helpers/node');
+const {SET_NODE_TYPE, NODE_TYPE, Adopt, setNodeDocument} = require('./helpers/node');
 const createElement = require('./helpers/createElement');
+const Text = require('./Text');
 
 class Document extends Node {
   constructor() {
     super();
-    SET_NODE_TYPE(DOCUMENT_NODE);
+    SET_NODE_TYPE(this, DOCUMENT_NODE);
   }
 
   get nodeName() {
@@ -39,6 +40,12 @@ class Document extends Node {
     const namespace = this.contentType;
 
     return createElement(this, localName, namespace, {prefix: null, is, syncCustomElements: false});
+  }
+
+  createTextNode(data = '') {
+    const node = new Text(data);
+    setNodeDocument(node, this);
+    return node;
   }
 }
 
