@@ -325,6 +325,21 @@ function ensurePreInsertionValidity(node, parent, child) {
   }
 }
 
+function ReplaceAll(parent, node) {
+  if (node) {
+    Adopt(node, getNodeDocument(parent));
+  }
+
+  const parentChildren = Array.from(TreeHelper.getChildrenIterator(parent));
+  for (const child of parentChildren) {
+    Remove(child, parent, {suppressObservers: true});
+  }
+
+  if (node) {
+    Insert(node, parent, null, {suppressObservers: true});
+  }
+}
+
 function getLength(node) {
   switch (NODE_TYPE(node)) {
     case DOCUMENT_TYPE_NODE:
@@ -357,12 +372,12 @@ function isExclusiveTextNode(node) {
   return isTextNode(node, true);
 }
 
-function getTextContent(node, exclusive = false) {
+function getTextContent(node) {
   switch (NODE_TYPE(node)) {
     case DOCUMENT_FRAGMENT_NODE:
     case ELEMENT_NODE:
       let text = '';
-      for (const child of getTextNodeDescendantsIterator(node, exclusive)) {
+      for (const child of getTextNodeDescendantsIterator(node)) {
         const childText = child.data;
         text = `${text}${childText}`;
       }
@@ -377,6 +392,28 @@ function getTextContent(node, exclusive = false) {
   }
 
   return null;
+}
+
+function setTextContent(node, value) {
+  switch (NODE_TYPE(node)) {
+    case DOCUMENT_FRAGMENT_NODE:
+    case ELEMENT_NODE:
+      value = String(value);
+      const document = getNodeDocument(node);
+      const textNode = (value != '' ? document.createTextNode(value) : null);
+      ReplaceAll(node, textNode);
+      break;
+    case ATTRIBUTE_NODE:
+      node.value = value;
+      break;
+    case TEXT_NODE:
+    case CDATA_SECTION_NODE:
+    case PROCESSING_INSTRUCTION_NODE:
+    case COMMENT_NODE:
+      //replaceData(node, 0, node.length, String(value));
+      node.data = value;
+      break;
+  }
 }
 
 function* getTextNodeDescendantsIterator(node, exclusive = false) {
@@ -428,7 +465,7 @@ function* getContiguousTextNodes(node, exclusive = false) {
  *
  */
 function normalize(node) {
-  const descendants = getTextNodeDescendantsIterator(node, true);
+  const descendants = Array.from(getTextNodeDescendantsIterator(node, true));
 
   for (const descendant of descendants) {
     const length = getLength(descendant);
@@ -462,10 +499,12 @@ module.exports = {
   Insert,
   Remove,
   Replace,
+  ReplaceAll,
   getLength,
   isTextNode,
   isExclusiveTextNode,
   getTextContent,
+  setTextContent,
   getTextNodeDescendantsIterator,
   getContiguousTextNodes,
   normalize

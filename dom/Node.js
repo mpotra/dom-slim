@@ -9,7 +9,13 @@ const {
   COMMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, DOCUMENT_FRAGMENT_NODE
 } = nodeTypes;
 const TreeHelper = require('./helpers/tree');
-const {NODE_TYPE, preInsert, preRemove, Replace, getTextContent, normalize} = require('./helpers/node');
+const {
+  NODE_TYPE,
+  preInsert, preRemove,
+  Replace,
+  getTextContent, setTextContent,
+  normalize
+} = require('./helpers/node');
 const NodeList = require('./NodeList');
 
 class Node {
@@ -101,6 +107,7 @@ class Node {
   }
 
   set textContent(value) {
+    setTextContent(this, value);
   }
 
   get childNodes() {
