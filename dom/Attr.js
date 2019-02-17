@@ -10,7 +10,7 @@ const {getElement, setElement, getValue, setValue} = require('./helpers/attr');
 class Attr extends Node {
   constructor() {
     super();
-    SET_NODE_TYPE(ATTRIBUTE_NODE);
+    SET_NODE_TYPE(this, ATTRIBUTE_NODE);
 
     setNamespace(this, null);
     setNamespacePrefix(this, null);

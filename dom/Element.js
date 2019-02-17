@@ -26,7 +26,7 @@ const {setElement: setNamedNodeMapElement} = require('./helpers/named-node-map')
 class Element extends Node {
   constructor() {
     super();
-    SET_NODE_TYPE(ELEMENT_NODE);
+    SET_NODE_TYPE(this, ELEMENT_NODE);
     this[kAttributeList] = new AttributeList();
     this[kElementAttributes] = new NamedNodeMap();
     setNamedNodeMapElement(this[kElementAttributes], this);
