@@ -27,6 +27,10 @@ const kAttributeValue = Symbol('attributeValue');
 const kElementAttributes = Symbol('attributes');
 const kAssociatedElement = Symbol('namedNodeMapElement');
 
+const kDocumentTypeName = Symbol('name');
+const kDocumentTypePublicId = Symbol('publicId');
+const kDocumentTypeSystemId = Symbol('systemId');
+
 module.exports = {
   kDocumentContext,
   customElements,
@@ -42,5 +46,7 @@ module.exports = {
   kAttributeList, kElementAttributes,
   kNamespace, kNamespacePrefix,
   kAttrElement, kAttributeValue,
-  kAssociatedElement
+  kAssociatedElement,
+  // doctype
+  kDocumentTypeName, kDocumentTypePublicId, kDocumentTypeSystemId
 };
