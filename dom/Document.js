@@ -1,7 +1,10 @@
 const {HierarchyRequestError, NotSupportedError} = require('./exceptions');
-const {Node, DOCUMENT_NODE} = require('./Node');
+const Node = require('./Node');
+const {DOCUMENT_NODE} = require('./node-types');
 const {SET_NODE_TYPE, NODE_TYPE, Adopt, setNodeDocument} = require('./helpers/node');
 const createElement = require('./helpers/createElement');
+
+const DocumentFragment = require('./DocumentFragment');
 const Text = require('./Text');
 
 class Document extends Node {
@@ -29,6 +32,12 @@ class Document extends Node {
 
     Adopt(node, this);
 
+    return node;
+  }
+
+  createDocumentFragment() {
+    const node = new DocumentFragment();
+    setNodeDocument(node, this);
     return node;
   }
 
