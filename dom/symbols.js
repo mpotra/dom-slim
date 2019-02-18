@@ -31,6 +31,8 @@ const kDocumentTypeName = Symbol('name');
 const kDocumentTypePublicId = Symbol('publicId');
 const kDocumentTypeSystemId = Symbol('systemId');
 
+const kPITarget = Symbol('target');
+
 module.exports = {
   kDocumentContext,
   customElements,
@@ -48,5 +50,7 @@ module.exports = {
   kAttrElement, kAttributeValue,
   kAssociatedElement,
   // doctype
-  kDocumentTypeName, kDocumentTypePublicId, kDocumentTypeSystemId
+  kDocumentTypeName, kDocumentTypePublicId, kDocumentTypeSystemId,
+  // processing instruction
+  kPITarget
 };

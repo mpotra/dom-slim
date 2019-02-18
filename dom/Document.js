@@ -2,13 +2,15 @@ const {HierarchyRequestError, NotSupportedError, InvalidCharacterError} = requir
 const Node = require('./Node');
 const {DOCUMENT_NODE} = require('./node-types');
 const {SET_NODE_TYPE, NODE_TYPE, Adopt, setNodeDocument} = require('./helpers/node');
-const {isHTMLDocument} = require('./helpers/namespace');
+const {isHTMLDocument, isValidName} = require('./helpers/namespace');
 const createElement = require('./helpers/createElement');
 
 const DocumentFragment = require('./DocumentFragment');
 const Text = require('./Text');
 const Comment = require('./Comment');
 const CDATASection = require('./CDATASection');
+const ProcessingInstruction = require('./ProcessingInstruction');
+const {setTarget: setProcessingInstructionTarget} = require('./helpers/processing-instruction');
 
 class Document extends Node {
   constructor() {
@@ -75,6 +77,24 @@ class Document extends Node {
     const namespace = this.contentType;
 
     return createElement(this, localName, namespace, {prefix: null, is, syncCustomElements: false});
+  }
+
+  createProcessingInstruction(target, data = '') {
+    if (false == isValidName(target)) {
+      throw InvalidCharacterError('Target is not a valid Name production');
+    }
+
+    data = String(data);
+
+    if (data.indexOf('?>') != -1) {
+      throw InvalidCharacterError('Invalid data string argument');
+    }
+
+    const node = new ProcessingInstruction();
+    setNodeDocument(node, this);
+    setProcessingInstructionTarget(node, target);
+    node.data = data;
+    return node;
   }
 
   createTextNode(data = '') {
