@@ -1,12 +1,14 @@
-const {HierarchyRequestError, NotSupportedError} = require('./exceptions');
+const {HierarchyRequestError, NotSupportedError, InvalidCharacterError} = require('./exceptions');
 const Node = require('./Node');
 const {DOCUMENT_NODE} = require('./node-types');
 const {SET_NODE_TYPE, NODE_TYPE, Adopt, setNodeDocument} = require('./helpers/node');
+const {isHTMLDocument} = require('./helpers/namespace');
 const createElement = require('./helpers/createElement');
 
 const DocumentFragment = require('./DocumentFragment');
 const Text = require('./Text');
 const Comment = require('./Comment');
+const CDATASection = require('./CDATASection');
 
 class Document extends Node {
   constructor() {
@@ -33,6 +35,23 @@ class Document extends Node {
 
     Adopt(node, this);
 
+    return node;
+  }
+
+  createCDATASection(data = '') {
+    data = String(data);
+
+    if (isHTMLDocument(this)) {
+      throw NotSupportedError('HTML documents do not support CDATA sections');
+    }
+
+    if (data.indexOf(']]>') != -1) {
+      throw InvalidCharacterError('Invalid CDATA section data');
+    }
+
+    const node = new CDATASection();
+    setNodeDocument(node, this);
+    node.data = data;
     return node;
   }
 
