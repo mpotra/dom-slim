@@ -6,6 +6,7 @@ const createElement = require('./helpers/createElement');
 
 const DocumentFragment = require('./DocumentFragment');
 const Text = require('./Text');
+const Comment = require('./Comment');
 
 class Document extends Node {
   constructor() {
@@ -32,6 +33,12 @@ class Document extends Node {
 
     Adopt(node, this);
 
+    return node;
+  }
+
+  createComment(data = '') {
+    const node = new Comment(String(data));
+    setNodeDocument(node, this);
     return node;
   }
 
