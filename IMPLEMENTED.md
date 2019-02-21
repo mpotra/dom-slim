@@ -5,7 +5,8 @@ Interfaces implemented: [Document](#document-interface), [DocumentType](#documen
 [Attr](#attr-interface), [Text](#text-interface), [Comment](#comment-interface), 
 [CDATASection](#cdatasection-interface), [ProcessingInstruction](#processinginstruction-interface), 
 [NamedNodeMap](#namednodemap-interface), [NodeList](#nodelist-interface), [CharacterData](#characterdata-interface), 
-[DOMException](#domexception-interface), [CustomElementRegistry](#customelementregistry-interface)
+[DOMException](#domexception-interface), [CustomElementRegistry](#customelementregistry-interface),
+[DOMImplementation](#domimplementation-interface)
 
 ### [Document](https://developer.mozilla.org/en-US/docs/Web/API/Document) Interface
 
@@ -13,22 +14,22 @@ extends [Node](#node-interface)
 
 | | | |ready|
 |--|--|--|--|
-|[SameObject] readonly attribute|~~DOMImplementation~~|implementation|no|
-|readonly attribute|string|URL|no|
-|readonly attribute|string|documentURI|no|
-|readonly attribute|string|origin|no|
-|readonly attribute|string|compatMode|no|
-|readonly attribute|string|characterSet|no|
-|readonly attribute|string|charset|no|
-|readonly attribute|string|inputEncoding|no|
-|readonly attribute|string|contentType|no|
-|readonly attribute|[DocumentType](#documenttype-interface)?|doctype|no|
-|readonly attribute|[Element](#element-interface)?|documentElement|no|
+|[SameObject] readonly attribute|[DOMImplementation](#domimplementation-interface)|implementation|yes|
+|readonly attribute|string|URL|yes|
+|readonly attribute|string|documentURI|yes|
+|readonly attribute|string|origin|yes|
+|readonly attribute|string|compatMode|yes|
+|readonly attribute|string|characterSet|yes|
+|readonly attribute|string|charset|yes|
+|readonly attribute|string|inputEncoding|yes|
+|readonly attribute|string|contentType|yes|
+|readonly attribute|[DocumentType](#documenttype-interface)?|doctype|yes|
+|readonly attribute|[Element](#element-interface)?|documentElement|yes|
 ||~~HTMLCollection~~|getElementsByTagName(string qualifiedName)|no|
 ||~~HTMLCollection~~|getElementsByTagNameNS(string? namespace, string localName)|no|
 ||~~HTMLCollection~~|getElementsByClassName(string classNames)|no|
 |[~~CEReactions~~, NewObject]|[Element](#element-interface)|createElement(string localName, optional (string or ~~ElementCreationOptions~~) options)|yes|
-|[~~CEReactions~~, NewObject]|[Element](#element-interface)|createElementNS(string? namespace, string qualifiedName, optional (string or ~~ElementCreationOptions~~) options)|no|
+|[~~CEReactions~~, NewObject]|[Element](#element-interface)|createElementNS(string? namespace, string qualifiedName, optional (string or ~~ElementCreationOptions~~) options)|yes|
 |[NewObject]|[DocumentFragment](#documentfragment-interface)|createDocumentFragment()|yes|
 |[NewObject]|[Text](#text-interface)|createTextNode(string data)|yes|
 |[NewObject]|[CDATASection](#cdatasection-interface)|createCDATASection(string data)|yes|
@@ -257,3 +258,11 @@ extends [CharacterData](#characterdata-interface)
 ||any|get(string name)|yes|
 ||Promise<[void]>|whenDefined(string name)|no|
 |[~~CEReactions~~]|void|upgrade([Node](#node-interface) root)|no|
+
+### [DOMImplementation](https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation) Interface
+
+| | | |ready|
+|--|--|--|--|
+|[NewObject]|[DocumentType](#documenttype-interface)|createDocumentType(string qualifiedName, string publicId, string systemId)|yes|
+|[NewObject]|[XMLDocument](#document-interface)|createDocument(string? namespace, string? qualifiedName, [DocumentType](#documenttype-interface)? doctype)|yes|
+|[NewObject]|[Document](#document-interface)|createHTMLDocument(string? title)|yes|

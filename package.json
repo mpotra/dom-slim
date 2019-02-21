@@ -1,6 +1,6 @@
 {
   "name": "dom-slim",
-  "version": "1.0.0-beta",
+  "version": "1.1.0",
   "description": "Slim Document Object Model Implementation",
   "main": "index.js",
   "scripts": {

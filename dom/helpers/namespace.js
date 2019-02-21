@@ -1,6 +1,8 @@
-const {kOwnerDocument, kLocalName, kNamespace, kNamespacePrefix} = require('../symbols');
+const {kLocalName, kNamespace, kNamespacePrefix} = require('../symbols');
 const {isName, isQName} = require('../../lib/xml-name-validator');
 const {NamespaceError, InvalidCharacterError} = require('../exceptions');
+const {getDocumentType} = require('./document');
+const {getNodeDocument} = require('./node');
 
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
@@ -11,7 +13,7 @@ function isHTMLDocument(document) {
 }
 
 function isXMLDocument(document) {
-  return (document.type === 'xml');
+  return (getDocumentType(document) == 'xml');
 }
 
 function isInHTMLNamespace(element) {
@@ -19,7 +21,7 @@ function isInHTMLNamespace(element) {
 }
 
 function isHTMLElement(element) {
-  return (isInHTMLNamespace(element) && isHTMLDocument(element[kOwnerDocument]));
+  return (isInHTMLNamespace(element) && isHTMLDocument(getNodeDocument(element)));
 }
 
 function getElementHTMLQualifiedName(element) {
