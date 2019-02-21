@@ -35,6 +35,10 @@ function setNodeDocument(node, document) {
   return (node[kOwnerDocument] = document);
 }
 
+function Append(node, parent) {
+  return preInsert(node, parent, null);
+}
+
 function preInsert(node, parent, child) {
   ensurePreInsertionValidity(node, parent, child);
 
@@ -493,6 +497,7 @@ module.exports = {
   SET_NODE_TYPE,
   getNodeDocument,
   setNodeDocument,
+  Append,
   preInsert,
   preRemove,
   Adopt,

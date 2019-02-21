@@ -3,6 +3,14 @@ const customElements = Symbol('customElements');
 const elementAttributes = Symbol('attributes');
 const kData = Symbol('data');
 const kDocumentURL = Symbol('documentURL');
+const kDocumentEncoding = Symbol('encoding');
+const kDocumentContentType = Symbol('content-type');
+const kDocumentOrigin = Symbol('origin');
+const kDocumentType = Symbol('type');
+const kDocumentMode = Symbol('mode');
+const kDocumentDOMImplementation = Symbol('implementation');
+const kDocumentCachedElement = Symbol('documentElement');
+
 const kLive = Symbol('live');
 const kOwnerNode = Symbol('ownerNode');
 
@@ -32,13 +40,16 @@ const kDocumentTypePublicId = Symbol('publicId');
 const kDocumentTypeSystemId = Symbol('systemId');
 
 const kPITarget = Symbol('target');
+const kOpaqueOrigin = Symbol('opaque origin');
+const kDOMImplementationDocumentConstructor = Symbol('document.constructor');
 
 module.exports = {
   kDocumentContext,
   customElements,
   elementAttributes,
   kData,
-  kDocumentURL,
+  kDocumentURL, kDocumentEncoding, kDocumentContentType, kDocumentOrigin, kDocumentType, kDocumentMode,
+  kDocumentDOMImplementation, kOpaqueOrigin, kDocumentCachedElement,
   kLive, kOwnerNode,
   kOwnerDocument, kNodeType, kLocalName,
   kParentNode, kPreviousSibling, kNextSibling, kFirstChild, kLastChild,
@@ -52,5 +63,7 @@ module.exports = {
   // doctype
   kDocumentTypeName, kDocumentTypePublicId, kDocumentTypeSystemId,
   // processing instruction
-  kPITarget
+  kPITarget,
+  // DOMImplementation
+  kDOMImplementationDocumentConstructor
 };

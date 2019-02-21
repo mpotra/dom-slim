@@ -1,21 +1,89 @@
-const {HierarchyRequestError, NotSupportedError, InvalidCharacterError} = require('./exceptions');
+const {HierarchyRequestError, NotSupportedError} = require('./exceptions');
 const Node = require('./Node');
+const DOMImplementation = require('./DOMImplementation');
 const {DOCUMENT_NODE} = require('./node-types');
-const {SET_NODE_TYPE, NODE_TYPE, Adopt, setNodeDocument} = require('./helpers/node');
-const {isHTMLDocument, isValidName} = require('./helpers/namespace');
-const createElement = require('./helpers/createElement');
+const {SET_NODE_TYPE, NODE_TYPE, setNodeDocument, Adopt} = require('./helpers/node');
+const {setDocumentConstructor} = require('./helpers/dom-implementation');
 
-const DocumentFragment = require('./DocumentFragment');
-const Text = require('./Text');
-const Comment = require('./Comment');
-const CDATASection = require('./CDATASection');
-const ProcessingInstruction = require('./ProcessingInstruction');
-const {setTarget: setProcessingInstructionTarget} = require('./helpers/processing-instruction');
+const {
+  getDocumentURL, setDocumentURL,
+  getDocumentEncoding, setDocumentEncoding,
+  getDocumentContentType, setDocumentContentType,
+  setDocumentType,
+  getDocumentMode, setDocumentMode,
+  setDocumentOpaqueOrigin,
+  getSerializedOrigin,
+  getDOMImplementation, setDOMImplementation,
+  getDocumentDoctype, getDocumentElement, setDocumentElement
+} = require('./helpers/document');
+
+const {
+  createElement,
+  createElementNS,
+  createTextNode,
+  createCDATASection,
+  createComment,
+  createProcessingInstruction,
+  createDocumentFragment
+} = require('./helpers/document-elements');
 
 class Document extends Node {
   constructor() {
     super();
     SET_NODE_TYPE(this, DOCUMENT_NODE);
+    setDocumentEncoding(this, 'UTF-8');
+    setDocumentContentType(this, 'application/xml');
+    setDocumentURL(this, 'about:blank');
+    setDocumentType(this, 'xml');
+    setDocumentMode(this, 'no-quirks');
+    setDocumentOpaqueOrigin(this);
+
+    // Create a new DOMImplementation instance.
+    const implementation = new DOMImplementation();
+
+    // Set DOMImplementation's context document.
+    setNodeDocument(implementation, this);
+    // Assign a Document constructor to the DOMImplementation instance.
+    setDocumentConstructor(implementation, this.constructor);
+
+    // Assign the DOMImplementation to this document.
+    setDOMImplementation(this, implementation);
+  }
+
+  get URL() {
+    return getDocumentURL(this);
+  }
+
+  get documentURI() {
+    return getDocumentURL(this);
+  }
+
+  get origin() {
+    return getSerializedOrigin(this);
+  }
+
+  get compatMode() {
+    return (getDocumentMode(this) == 'quirks' ? 'BackCompat' : 'CSS1Compat');
+  }
+
+  get characterSet() {
+    return getDocumentEncoding(this);
+  }
+
+  get charset() {
+    return getDocumentEncoding(this);
+  }
+
+  get inputEncoding() {
+    return getDocumentEncoding(this);
+  }
+
+  get contentType() {
+    return getDocumentContentType(this);
+  }
+
+  get implementation() {
+    return getDOMImplementation(this);
   }
 
   get nodeName() {
@@ -24,6 +92,14 @@ class Document extends Node {
 
   get nodeValue() {
     return null;
+  }
+
+  get doctype() {
+    return getDocumentDoctype(this);
+  }
+
+  get documentElement() {
+    return getDocumentElement(this);
   }
 
   adoptNode(node) {
@@ -41,66 +117,41 @@ class Document extends Node {
   }
 
   createCDATASection(data = '') {
-    data = String(data);
-
-    if (isHTMLDocument(this)) {
-      throw NotSupportedError('HTML documents do not support CDATA sections');
-    }
-
-    if (data.indexOf(']]>') != -1) {
-      throw InvalidCharacterError('Invalid CDATA section data');
-    }
-
-    const node = new CDATASection();
-    setNodeDocument(node, this);
-    node.data = data;
-    return node;
+    return createCDATASection(this, data);
   }
 
   createComment(data = '') {
-    const node = new Comment(String(data));
-    setNodeDocument(node, this);
-    return node;
+    return createComment(this, data);
   }
 
   createDocumentFragment() {
-    const node = new DocumentFragment();
-    setNodeDocument(node, this);
-    return node;
+    return createDocumentFragment(this);
   }
 
-  createElement(localName, {is} = {}) {
-    if (typeof is === 'undefined') {
-      is = null;
-    }
+  createElement(localName, options) {
+    return createElement(this, localName, options);
+  }
 
-    const namespace = this.contentType;
-
-    return createElement(this, localName, namespace, {prefix: null, is, syncCustomElements: false});
+  createElementNS(namespace, qualifiedName, options) {
+    return createElementNS(this, namespace, qualifiedName, options);
   }
 
   createProcessingInstruction(target, data = '') {
-    if (false == isValidName(target)) {
-      throw InvalidCharacterError('Target is not a valid Name production');
-    }
-
-    data = String(data);
-
-    if (data.indexOf('?>') != -1) {
-      throw InvalidCharacterError('Invalid data string argument');
-    }
-
-    const node = new ProcessingInstruction();
-    setNodeDocument(node, this);
-    setProcessingInstructionTarget(node, target);
-    node.data = data;
-    return node;
+    return createProcessingInstruction(this, target, data);
   }
 
   createTextNode(data = '') {
-    const node = new Text(data);
-    setNodeDocument(node, this);
-    return node;
+    return createTextNode(this, data);
+  }
+
+  removeChild(node) {
+    const removedNode = super.removeChild(node);
+
+    if (removedNode == getDocumentElement(this)) {
+      setDocumentElement(this, null);
+    }
+
+    return removedNode;
   }
 }
 

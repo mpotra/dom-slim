@@ -1,7 +1,8 @@
 const Element = require('../Element');
 const {setNodeDocument} = require('./node');
-const {setLocalName} = require('./namespace');
+const {setLocalName, ValidateAndExtract} = require('./namespace');
 const {getDocumentContext} = require('./document');
+const {hasEntry, getEntryUnsafe} = require('./dict');
 
 function createElement(document, localName, namespace, {prefix = null, is = null, syncCustomElements} = {}) {
   const context = getDocumentContext(document);
@@ -29,4 +30,24 @@ function createElement(document, localName, namespace, {prefix = null, is = null
   return result;
 }
 
-module.exports = createElement;
+function createElementNS(document, namespace, qualifiedName, dict = {}) {
+  const validation = ValidateAndExtract(namespace, qualifiedName);
+  let is = null;
+
+  if (hasEntry(dict, 'is')) {
+    is = getEntryUnsafe(dict, is);
+  }
+
+  const options = {
+    prefix: validation.prefix,
+    is,
+    syncCustomElements: true
+  };
+
+  return createElement(document, validation.localName, validation.namespace, options);
+}
+
+module.exports = {
+  createElement,
+  createElementNS
+};
