@@ -1,6 +1,6 @@
 ## Changelog
 
-### v1.1.0
+## v1.1.0 (Released 21/02/2019)
 
 Provides missing `Document` properties and `DOMImplementation` interface
 
@@ -17,3 +17,7 @@ Provides missing `Document` properties and `DOMImplementation` interface
 - Move creating elements out of `Document` interface, and into helpers
 - Update documentation
 - Add CHANGELOG.md file
+
+## v1.0.0-beta (Released 18/02/2019)
+
+*No list of changes / First release*
